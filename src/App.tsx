@@ -31,7 +31,7 @@ function App() {
 
       const { data: qResult, error: qError } = await query.order('created_at', { ascending: false });
 
-      if (qError && qError.message.toLowerCase().includes('created_at') && qError.message.toLowerCase().includes('not exist')) {
+      if (qError) {
         const { data: qResultFallback, error: qErrorFallback } = await supabase!.from(tableName).select('*').limit(50);
         result = qResultFallback;
         fetchError = qErrorFallback;
