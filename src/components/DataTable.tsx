@@ -73,6 +73,14 @@ export const DataTable: React.FC<DataTableProps> = ({
             );
         }
 
+        if (typeof val === 'string' && val.trim().toUpperCase() === 'PRODUCTO SIN SINCRONIZAR') {
+            return (
+                <span className="bg-red-500 text-white font-bold px-2 py-1 rounded-md text-[11px] shadow-sm animate-pulse whitespace-nowrap">
+                    {val}
+                </span>
+            );
+        }
+
         if (isIDColumn(col) || (typeof val === 'string' && val.length > 20)) {
             return (
                 <span
@@ -80,14 +88,6 @@ export const DataTable: React.FC<DataTableProps> = ({
                     title={val.toString()}
                 >
                     {truncateUUID(val.toString())}
-                </span>
-            );
-        }
-
-        if (typeof val === 'string' && val.trim().toUpperCase() === 'PRODUCTO SIN SINCRONIZAR') {
-            return (
-                <span className="bg-red-500 text-white font-bold px-2 py-1 rounded-md text-[11px] shadow-sm animate-pulse">
-                    {val}
                 </span>
             );
         }
