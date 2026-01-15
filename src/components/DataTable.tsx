@@ -84,7 +84,7 @@ export const DataTable: React.FC<DataTableProps> = ({
             );
         }
 
-        if (val === 'PRODUCTO SIN SINCRONIZAR') {
+        if (typeof val === 'string' && val.trim().toUpperCase() === 'PRODUCTO SIN SINCRONIZAR') {
             return (
                 <span className="bg-red-500 text-white font-bold px-2 py-1 rounded-md text-[11px] shadow-sm animate-pulse">
                     {val}
