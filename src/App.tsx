@@ -17,8 +17,16 @@ function App() {
   const [searchQuery, setSearchQuery] = useState('');
   const [limit, setLimit] = useState(100);
   const [selectedRow, setSelectedRow] = useState<any>(null);
+  const [sortColumn, setSortColumn] = useState('created_at');
+  const [sortAscending, setSortAscending] = useState(false);
 
-  const fetchData = async (tableName: string, queryStr: string = '', recordsLimit: number = 100) => {
+  const fetchData = async (
+    tableName: string,
+    queryStr: string = '',
+    recordsLimit: number = 100,
+    orderBy: string = 'created_at',
+    ascending: boolean = false
+  ) => {
     if (!supabase) return;
 
     setLoading(true);
@@ -52,15 +60,15 @@ function App() {
         }
       }
 
-      // Try ordering by created_at
+      // Try ordering by requested column
       const { data: qResult, error: qError } = await query
-        .order('created_at', { ascending: false })
+        .order(orderBy, { ascending })
         .limit(recordsLimit);
 
       let finalResult = qResult;
       let finalError = qError;
 
-      // Fallback if created_at does not exist (e.g. table doesn't have it)
+      // Fallback if requested column does not exist (e.g. table doesn't have it)
       if (qError && qError.code === '42703') {
         let fallbackQuery = supabase!.from(tableName).select('*');
         if (queryStr) {
@@ -73,6 +81,7 @@ function App() {
             fallbackQuery = fallbackQuery.ilike('type', `%${queryStr}%`);
           }
         }
+        // Fallback to no ordering if the column fails
         const { data: fr, error: fe } = await fallbackQuery.limit(recordsLimit);
         finalResult = fr;
         finalError = fe;
@@ -98,18 +107,27 @@ function App() {
 
   useEffect(() => {
     if (isConfigured) {
-      fetchData(selectedTable, searchQuery, limit);
+      fetchData(selectedTable, searchQuery, limit, sortColumn, sortAscending);
     }
   }, [selectedTable]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    fetchData(selectedTable, searchQuery, limit);
+    fetchData(selectedTable, searchQuery, limit, sortColumn, sortAscending);
   };
 
   const resetSearch = () => {
     setSearchQuery('');
-    fetchData(selectedTable, '', limit);
+    fetchData(selectedTable, '', limit, sortColumn, sortAscending);
+  };
+
+  const handleSort = (column: string) => {
+    const isSameColumn = sortColumn === column;
+    const newAscending = isSameColumn ? !sortAscending : false;
+
+    setSortColumn(column);
+    setSortAscending(newAscending);
+    fetchData(selectedTable, searchQuery, limit, column, newAscending);
   };
 
   if (!isConfigured) {
@@ -124,6 +142,8 @@ function App() {
           setSelectedTable(table);
           setSearchQuery(''); // Reset search when changing table
           setSelectedRow(null); // Reset detail view when changing table
+          setSortColumn('created_at');
+          setSortAscending(false);
         }}
       />
 
@@ -172,7 +192,7 @@ function App() {
               onChange={(e) => {
                 const newLimit = Number(e.target.value);
                 setLimit(newLimit);
-                fetchData(selectedTable, searchQuery, newLimit);
+                fetchData(selectedTable, searchQuery, newLimit, sortColumn, sortAscending);
               }}
               className="px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm transition-all"
             >
@@ -183,7 +203,7 @@ function App() {
             </select>
 
             <button
-              onClick={() => fetchData(selectedTable, searchQuery, limit)}
+              onClick={() => fetchData(selectedTable, searchQuery, limit, sortColumn, sortAscending)}
               disabled={loading}
               className="flex items-center gap-2 px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm font-semibold text-slate-700 hover:bg-slate-50 transition-all shadow-sm active:scale-95 disabled:opacity-50"
             >
@@ -202,6 +222,9 @@ function App() {
               isLoading={loading}
               error={error}
               onRowSelect={(row) => setSelectedRow(row)}
+              sortColumn={sortColumn}
+              sortAscending={sortAscending}
+              onSort={handleSort}
             />
           )}
         </section>

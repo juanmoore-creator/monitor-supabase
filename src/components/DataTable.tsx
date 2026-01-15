@@ -1,15 +1,25 @@
-import React from 'react';
 import { formatDate, truncateUUID, isBoolean, isDateColumn, isIDColumn } from '../utils/formatters';
-import { DatabaseIcon, ShieldAlert } from 'lucide-react';
+import { DatabaseIcon, ShieldAlert, ChevronDown, ChevronUp } from 'lucide-react';
 
 interface DataTableProps {
     data: any[];
     isLoading: boolean;
     error: string | null;
     onRowSelect?: (row: any) => void;
+    sortColumn?: string;
+    sortAscending?: boolean;
+    onSort?: (column: string) => void;
 }
 
-export const DataTable: React.FC<DataTableProps> = ({ data, isLoading, error, onRowSelect }) => {
+export const DataTable: React.FC<DataTableProps> = ({
+    data,
+    isLoading,
+    error,
+    onRowSelect,
+    sortColumn,
+    sortAscending,
+    onSort
+}) => {
     if (error) {
         return (
             <div className="bg-orange-50 border border-orange-200 rounded-xl p-8 text-center">
@@ -74,6 +84,14 @@ export const DataTable: React.FC<DataTableProps> = ({ data, isLoading, error, on
             );
         }
 
+        if (val === 'PRODUCTO SIN SINCRONIZAR') {
+            return (
+                <span className="bg-red-500 text-white font-bold px-2 py-1 rounded-md text-[11px] shadow-sm animate-pulse">
+                    {val}
+                </span>
+            );
+        }
+
         return <span className="text-slate-700">{val.toString()}</span>;
     };
 
@@ -84,8 +102,20 @@ export const DataTable: React.FC<DataTableProps> = ({ data, isLoading, error, on
                     <thead>
                         <tr className="bg-slate-50 border-b border-slate-200">
                             {columns.map((col) => (
-                                <th key={col} className="px-4 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider whitespace-nowrap">
-                                    {col.replace(/_/g, ' ')}
+                                <th
+                                    key={col}
+                                    onClick={() => onSort?.(col)}
+                                    className={`px-4 py-3 text-xs font-bold uppercase tracking-wider whitespace-nowrap transition-colors select-none ${onSort ? 'cursor-pointer hover:bg-slate-100 hover:text-slate-700' : 'text-slate-500'
+                                        } ${sortColumn === col ? 'text-indigo-600 bg-indigo-50/30' : 'text-slate-500'}`}
+                                >
+                                    <div className="flex items-center gap-2">
+                                        {col.replace(/_/g, ' ')}
+                                        {sortColumn === col ? (
+                                            sortAscending ? <ChevronUp size={14} className="text-indigo-600" /> : <ChevronDown size={14} className="text-indigo-600" />
+                                        ) : (
+                                            onSort && <ChevronDown size={14} className="text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                        )}
+                                    </div>
                                 </th>
                             ))}
                         </tr>
@@ -98,7 +128,7 @@ export const DataTable: React.FC<DataTableProps> = ({ data, isLoading, error, on
                                 className={`transition-colors group ${onRowSelect ? 'cursor-pointer hover:bg-slate-50' : ''}`}
                             >
                                 {columns.map((col) => (
-                                    <td key={col} className="px-4 py-3 text-sm">
+                                    <td key={col} className={`px-4 py-3 text-sm ${sortColumn === col ? 'bg-indigo-50/5' : ''}`}>
                                         {renderCell(row[col], col)}
                                     </td>
                                 ))}
