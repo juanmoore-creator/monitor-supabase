@@ -31,14 +31,21 @@ function App() {
       if (queryStr) {
         const isQueryUUID = isUUID(queryStr);
 
-        if (tableName.includes('logs')) {
+        if (tableName === 'logs_integracion') {
+          if (isQueryUUID) {
+            query = query.eq('id', queryStr);
+          } else {
+            // Search in relevant columns for logs_integracion
+            query = query.or(`detalle_mensaje.ilike.%${queryStr}%,estado.ilike.%${queryStr}%,entidad.ilike.%${queryStr}%`);
+          }
+        } else if (tableName === 'logs') {
           if (isQueryUUID) {
             query = query.eq('id', queryStr);
           } else {
             query = query.ilike('type', `%${queryStr}%`);
           }
         } else {
-          // Generic filtering for other tables
+          // Generic filtering for other tables (ID only for safety)
           if (isQueryUUID) {
             query = query.eq('id', queryStr);
           }
@@ -60,7 +67,9 @@ function App() {
           const isQueryUUID = isUUID(queryStr);
           if (isQueryUUID) {
             fallbackQuery = fallbackQuery.eq('id', queryStr);
-          } else if (tableName.includes('logs')) {
+          } else if (tableName === 'logs_integracion') {
+            fallbackQuery = fallbackQuery.or(`detalle_mensaje.ilike.%${queryStr}%,estado.ilike.%${queryStr}%,entidad.ilike.%${queryStr}%`);
+          } else if (tableName === 'logs') {
             fallbackQuery = fallbackQuery.ilike('type', `%${queryStr}%`);
           }
         }
@@ -145,7 +154,7 @@ function App() {
                 placeholder="Buscar por ID o Tipo..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 pr-10 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 w-full sm:w-64 transition-all shadow-sm"
+                className="pl-10 pr-10 py-2.5 bg-white border border-slate-200 rounded-xl text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 w-full sm:w-64 transition-all shadow-sm"
               />
               {searchQuery && (
                 <button
