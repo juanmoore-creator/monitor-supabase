@@ -6,9 +6,10 @@ interface DataTableProps {
     data: any[];
     isLoading: boolean;
     error: string | null;
+    onRowSelect?: (row: any) => void;
 }
 
-export const DataTable: React.FC<DataTableProps> = ({ data, isLoading, error }) => {
+export const DataTable: React.FC<DataTableProps> = ({ data, isLoading, error, onRowSelect }) => {
     if (error) {
         return (
             <div className="bg-orange-50 border border-orange-200 rounded-xl p-8 text-center">
@@ -91,7 +92,11 @@ export const DataTable: React.FC<DataTableProps> = ({ data, isLoading, error }) 
                     </thead>
                     <tbody className="divide-y divide-slate-100">
                         {data.map((row, idx) => (
-                            <tr key={idx} className="hover:bg-slate-50 transition-colors group">
+                            <tr
+                                key={idx}
+                                onClick={() => onRowSelect?.(row)}
+                                className={`transition-colors group ${onRowSelect ? 'cursor-pointer hover:bg-slate-50' : ''}`}
+                            >
                                 {columns.map((col) => (
                                     <td key={col} className="px-4 py-3 text-sm">
                                         {renderCell(row[col], col)}

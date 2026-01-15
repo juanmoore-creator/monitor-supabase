@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Sidebar } from './components/Sidebar';
 import { DataTable } from './components/DataTable';
+import { DetailModal } from './components/DetailModal';
 import { SkeletonLoader } from './components/SkeletonLoader';
 import { ErrorScreen } from './components/ErrorScreen';
 import { supabase, isConfigured, missingEnvVars } from './lib/supabase';
@@ -15,6 +16,7 @@ function App() {
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [limit, setLimit] = useState(100);
+  const [selectedRow, setSelectedRow] = useState<any>(null);
 
   const fetchData = async (tableName: string, queryStr: string = '', recordsLimit: number = 100) => {
     if (!supabase) return;
@@ -39,9 +41,6 @@ function App() {
           // Generic filtering for other tables
           if (isQueryUUID) {
             query = query.eq('id', queryStr);
-          } else {
-            // Try common columns if they exist (name, email, etc) 
-            // but for now only search ID if it's a UUID for safety
           }
         }
       }
@@ -115,6 +114,7 @@ function App() {
         onTableChange={(table) => {
           setSelectedTable(table);
           setSearchQuery(''); // Reset search when changing table
+          setSelectedRow(null); // Reset detail view when changing table
         }}
       />
 
@@ -188,9 +188,20 @@ function App() {
           {loading ? (
             <SkeletonLoader />
           ) : (
-            <DataTable data={data} isLoading={loading} error={error} />
+            <DataTable
+              data={data}
+              isLoading={loading}
+              error={error}
+              onRowSelect={(row) => setSelectedRow(row)}
+            />
           )}
         </section>
+
+        <DetailModal
+          data={selectedRow}
+          isOpen={!!selectedRow}
+          onClose={() => setSelectedRow(null)}
+        />
 
         <footer className="mt-12 pt-6 border-t border-slate-200 text-center">
           <p className="text-sm text-slate-400">

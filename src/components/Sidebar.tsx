@@ -1,10 +1,7 @@
 import React from 'react';
 import {
     Database,
-    Users,
-    Package,
     ShoppingCart,
-    FileText,
     ClipboardList
 } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
@@ -23,10 +20,6 @@ const FIXED_TABLES = [
     { id: 'sync_catalog', name: 'Sync Catalog', icon: Database },
     { id: 'processed_orders', name: 'Processed Orders', icon: ShoppingCart },
     { id: 'logs_integracion', name: 'Logs Integración', icon: ClipboardList },
-    { id: 'usuarios', name: 'Usuarios', icon: Users },
-    { id: 'productos', name: 'Productos', icon: Package },
-    { id: 'ordenes', name: 'Órdenes', icon: ShoppingCart },
-    { id: 'logs', name: 'Logs', icon: FileText },
 ];
 
 export const Sidebar: React.FC<SidebarProps> = ({ currentTable, onTableChange }) => {
